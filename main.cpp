@@ -4,7 +4,7 @@
 
 QTextStream * out;
 
-// перечисление HID устройств
+// transfer HID devices
 void enumerate_hid()
 {
     hid_device_info * hinfo;
@@ -17,10 +17,10 @@ void enumerate_hid()
 
         while(hinfo != NULL)
         {
-            * out << QCoreApplication::tr("Устройство: %1:%2 - %3\n").arg(QString::number(hinfo->vendor_id, 16),
+            * out << QCoreApplication::tr("Device: %1:%2 - %3\n").arg(QString::number(hinfo->vendor_id, 16),
                         QString::number(hinfo->product_id,16), hinfo->path);
-            * out << QCoreApplication::tr("    производитель: %1\n").arg(QString::fromWCharArray(hinfo->manufacturer_string));
-            * out << QCoreApplication::tr("    устройство:    %1\n").arg(QString::fromWCharArray(hinfo->product_string));
+            * out << QCoreApplication::tr("    Manufacturer: %1\n").arg(QString::fromWCharArray(hinfo->manufacturer_string));
+            * out << QCoreApplication::tr("    Device:    %1\n").arg(QString::fromWCharArray(hinfo->product_string));
 
             hinfo = hinfo->next;
         }
@@ -28,14 +28,14 @@ void enumerate_hid()
         hid_free_enumeration(enumerate);
     }
     else
-        * out << QCoreApplication::tr("Список устройств пуст\n");
+        * out << QCoreApplication::tr("The device list is empty\n");
 }
 
-// необходимые перечисления
+// necessary transfers
 class kl_const
 {
   public:
-    enum regions      // области клавиатуры
+    enum regions      // keyboard area
     {
       left   = 1,
       middle = 2,
@@ -55,7 +55,7 @@ class kl_const
       white = 8
     };
 
-    enum levels     // уровни подсветки
+    enum levels     // levels of illumination
     {
       light = 3,
       low = 2,
@@ -63,7 +63,7 @@ class kl_const
       high = 0
     };
 
-    enum modes      // режимы подсветки
+    enum modes      // backlight modes
     {
       normal = 1,
       gaming = 2,
@@ -73,12 +73,12 @@ class kl_const
     };
 };
 
-// установка режима
+// set the mode
 void set_mode(hid_device * dev, kl_const::modes mode)
 {
     unsigned char commit[8];
 
-    // проверка входного параметра
+    // check the input parameter
     if (mode != kl_const::normal && mode != kl_const::gaming &&
        mode != kl_const::breathe && mode != kl_const::demo && mode != kl_const::wave)
        mode = kl_const::normal;
@@ -95,22 +95,22 @@ void set_mode(hid_device * dev, kl_const::modes mode)
     hid_send_feature_report(dev, commit, 8);
 }
 
-// установка цвета
+// set the color
 void set_color(hid_device * dev, kl_const::regions region, kl_const::colors color, kl_const::levels level)
 {
     unsigned char activate[8];
 
-    // проверим регион
+    // check the region
     if(region != kl_const::left && region != kl_const::middle && region != kl_const::right)
         return;
 
-    // проверим цвет
+    // check the color
     if(color != kl_const::off && color != kl_const::red && color != kl_const::orange &&
        color != kl_const::yellow && color != kl_const::green && color != kl_const::sky &&
        color != kl_const::blue && color != kl_const::purple && color != kl_const::white)
         return;
 
-    // проверим уровень
+    // check the level
     if(level != kl_const::light && level != kl_const::low &&
        level != kl_const::med && level != kl_const::high)
         return;
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     QString AllowedParms = "-l,-off,-red,-orange,-sky,-blue,-yellow,-green,-purple,-white,";
     QString Arg1;
 
-    // инициализация
+    // initialize
     QCoreApplication a(argc, argv);
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     _out.setCodec(QTextCodec::codecForLocale());
     out = & _out;
 
-    //матрицы сопоставления параметров
+    // matrix matching options
     QMap <QString, kl_const::regions> MapRegions;
     QMap <QString, kl_const::colors>  MapColors;
     QMap <QString, kl_const::levels>  MapLevels;
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     MapLevels.insert("med",    kl_const::med);
     MapLevels.insert("high",   kl_const::high);
 
-    // проверка параметров
+    // check parameters
     if(argc < 2 || argc > 3)
         arg_error = true;
 
@@ -191,25 +191,25 @@ int main(int argc, char *argv[])
 
     if(arg_error)
     {
-      *out << a.tr("Использование: \n");
-      *out << a.tr(" -l       список HID устройств (нам требуется 0x1770, 0xff00)\n");
-      *out << a.tr(" -off     выключить все\n");
-      *out << a.tr(" -red     красная подсветка\n");
-      *out << a.tr(" -orange  оранжевая подсветка\n");
-      *out << a.tr(" -yellow  желтая подсветка\n");
-      *out << a.tr(" -green   зеленая подсветка\n");
-      *out << a.tr(" -sky     небесная подсветка\n");
-      *out << a.tr(" -blue    голубая подстветка\n");
-      *out << a.tr(" -purple  пурпурная подсветка\n");
-      *out << a.tr(" -white   белая подсветка\n");
-      *out << a.tr(" -p preset название настройки из файла конфигурации\n\n");
+      *out << a.tr("Usage: \n");
+      *out << a.tr(" -l       List HID devices (we need 0x1770, 0xff00)\n");
+      *out << a.tr(" -off     Switch off all\n");
+      *out << a.tr(" -red     Red light\n");
+      *out << a.tr(" -orange  Orange light\n");
+      *out << a.tr(" -yellow  Yellow light\n");
+      *out << a.tr(" -green   Green light\n");
+      *out << a.tr(" -sky     Sky light\n");
+      *out << a.tr(" -blue    Blue light\n");
+      *out << a.tr(" -purple  Purple light\n");
+      *out << a.tr(" -white   White light\n");
+      *out << a.tr(" -p preset Preset from the configuration file\n\n");
       return -1;
     }
 
     res = hid_init();
     if(res != 0)
     {
-        *out << a.tr("Ошибка инициализации HIDAPI: %1").arg(res);
+        *out << a.tr("Failed to initialize HIDAPI: %1").arg(res);
         return -1;
     }
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
       enumerate_hid();
     else
     {
-        // получаем нужное нам устройство // 0x1770, 0xff00 делаем две попытки
+        // obtain the desired device // 0x1770, 0xff00 make two attempts
         hiddev = hid_open(0x1770, 0xff00, 0);
         if(hiddev == NULL)
         {
@@ -225,14 +225,14 @@ int main(int argc, char *argv[])
             res = hid_init();
             if(res != 0)
             {
-                *out << a.tr("Ошибка инициализации HIDAPI: %1").arg(res);
+                *out << a.tr("Failed to initialize HIDAPI: %1").arg(res);
                 return -1;
             }
 
             hiddev = hid_open(0x1770, 0xff00, 0);
             if(hiddev == NULL)
             {
-                *out << a.tr("Ошибка открытия устройства!\n");
+                *out << a.tr("Error opening the device!\n");
                 hid_exit();
                 return -1;
             }
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 
         if(argc == 3 && Arg1 == "-p")
         {
-          // читаем данные из файла конфигурации
+          // read the data form the configuration file
           QFile f("/etc/w7/key-light.conf");
           if(f.open(QIODevice::ReadOnly))
           {
@@ -269,30 +269,30 @@ int main(int argc, char *argv[])
                {
                  preset_found = true;
 
-                 // регион
+                 // region
                  if(MapRegions.contains(fields.at(1)))
                     region = MapRegions.value(fields.at(1));
                  else
                  {
-                   *out << a.tr("Ошибочное значение региона в строке: %1").arg(LineCount);
+                   *out << a.tr("Bad region value: %1").arg(LineCount);
                    arg_error = true;
                  }
 
-                 // цвет
+                 // color
                  if(MapColors.contains(fields.at(2)))
                     color = MapColors.value(fields.at(2));
                  else
                  {
-                   *out << a.tr("Ошибочное значение региона в цвета: %1").arg(LineCount);
+                   *out << a.tr("Bad color value: %1").arg(LineCount);
                    arg_error = true;
                  }
 
-                 // интенсивность
+                 // intensity
                  if(MapLevels.contains(fields.at(3)))
                     level = MapLevels.value(fields.at(3));
                  else
                  {
-                   *out << a.tr("Ошибочное значение региона в строке: %1").arg(LineCount);
+                   *out << a.tr("Bad level value: %1").arg(LineCount);
                    arg_error = true;
                  }
 
@@ -306,19 +306,19 @@ int main(int argc, char *argv[])
 
            if(!preset_found)
            {
-               *out << a.tr("Указанная настройка не найдена\n");
+               *out << a.tr("Preset setting wasn't found\n");
                arg_error = true;
            }
           }
           else
           {
-              *out << a.tr("Ошибка открытия файла конфигурации /etc/w7/key-light.conf\n");
+              *out << a.tr("Error opening configuration file /etc/w7/key-light.conf\n");
               arg_error = true;
           }
         }
         else
         {
-           // цвет прямо указан в параметре
+           // color is specified in the parameter
            kl_const::colors color;
 
            Arg1.remove(0,1);
